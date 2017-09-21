@@ -1,5 +1,7 @@
 import React from 'react';
 import { Field, reduxForm } from 'redux-form';
+import { connect } from 'react-redux';
+import * as Actions from '../actions';
 
 const validate = values => {
     const errors = {};
@@ -27,6 +29,10 @@ const validate = values => {
 
 class Signup extends React.Component {
 
+    handleFormSubmit = (values) => {
+        this.props.signInUser(values);
+    };
+
     renderField = ({ input, label, type, meta: { touched, error }}) => (
         <fieldset className={`form-group ${touched && error ? 'has-error' : ''}`}>
             <label className="control-label">{label}</label>
@@ -41,8 +47,8 @@ class Signup extends React.Component {
         return (
             <div className="container">
                 <div className="col-md-6 col-md-offset-3">
-                    <h2 className="text-center">Log In</h2>
-                    <form>
+                    <h2 className="text-center">Sign up</h2>
+                    <form onSubmit={this.props.handleSubmit(this.handleFormSubmit)}>
                         <Field name="email" type="text" component={this.renderField} label="Email" />
                         <Field name="password" type="password" component={this.renderField} label="Password" />
                         <Field name="passwordConfirmation" type="password" component={this.renderField} label="Password Confirmation" />
@@ -55,7 +61,7 @@ class Signup extends React.Component {
     }
 }
 
-export default reduxForm({
+export default connect(null, Actions)(reduxForm({
     form: 'signup',
     validate
-})(Signup);
+})(Signup));
