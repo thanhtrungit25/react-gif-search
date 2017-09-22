@@ -30,7 +30,7 @@ const validate = values => {
 class Signup extends React.Component {
 
     handleFormSubmit = (values) => {
-        this.props.signInUser(values);
+        this.props.signUpUser(values);
     };
 
     renderField = ({ input, label, type, meta: { touched, error }}) => (
@@ -43,11 +43,21 @@ class Signup extends React.Component {
         </fieldset>
     );
 
+    renderAuthenticationError() {
+        if (this.props.authenticationError) {
+            return <div className="alert alert-danger">{ this.props.authenticationError }</div>
+        }
+        return <div></div>;
+    }
+
     render() {
         return (
             <div className="container">
                 <div className="col-md-6 col-md-offset-3">
                     <h2 className="text-center">Sign up</h2>
+
+                    { this.renderAuthenticationError() }
+                    
                     <form onSubmit={this.props.handleSubmit(this.handleFormSubmit)}>
                         <Field name="email" type="text" component={this.renderField} label="Email" />
                         <Field name="password" type="password" component={this.renderField} label="Password" />
@@ -61,7 +71,13 @@ class Signup extends React.Component {
     }
 }
 
-export default connect(null, Actions)(reduxForm({
+function mapStateToProps(state) {
+    return {
+        authenticationError: state.auth.error
+    }
+}
+
+export default connect(mapStateToProps, Actions)(reduxForm({
     form: 'signup',
     validate
 })(Signup));

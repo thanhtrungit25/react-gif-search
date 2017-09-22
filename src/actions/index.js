@@ -1,20 +1,36 @@
 import request from 'superagent';
+import Firebase from 'firebase';
 
 export const REQUEST_GIFS = 'REQUEST_GIFS';
 export const OPEN_MODAL = 'OPEN_MODAL';
 export const CLOSE_MODAL = 'CLOSE_MODAL';
-export const SIGN_IN_USER = 'SIGN_IN_USER';
+
 export const SIGN_OUT_USER = 'SIGN_OUT_USER';
+export const AUTH_ERROR = 'AUTH_ERROR';
+export const AUTH_USER = 'AUTH_USER';
 
 const API_URL = 'http://api.giphy.com/v1/gifs/search?q=';
 const API_KEY = '&api_key=dc6zaTOxFJmzC';
 
+const config = {
+    apiKey: "AIzaSyC0KayPNKvU9nr4AsT6LXsJaqURZ1pmLPI",
+    authDomain: "react-gif-search-5bf0a.firebaseapp.com",
+    databaseURL: "https://react-gif-search-5bf0a.firebaseio.com",
+    projectId: "react-gif-search-5bf0a",
+    storageBucket: "react-gif-search-5bf0a.appspot.com",
+    messagingSenderId: "591982331642"
+  };
+
+Firebase.initializeApp(config);
+
 export function requestGifs(term = null) {
-    const data = request(`${API_URL}${term.replace(/\s/g, '+')}${API_KEY}`)
-    
-    return {
-        type: REQUEST_GIFS,
-        payload: data   
+    return function(dispatch) {
+        request(`${API_URL}${term.replace(/\s/g, '+')}${API_KEY}`).then(response => {
+            dispatch({
+                type: REQUEST_GIFS,
+                payload: response
+            });
+        });
     }
 }
 
@@ -31,14 +47,47 @@ export function closeModal() {
     }
 }
 
-export function signInUser() {
-    return {
-        type: SIGN_IN_USER
+export function signUpUser(credentials) {
+    return function(dispatch) {
+        Firebase.auth().createUserWithEmailAndPassword(credentials.email, credentials.password)
+            .then(response => {
+                dispatch(authUser());
+            })
+            .catch(error => {
+                console.log(error);
+                dispatch(authError(error));
+            });
+    }
+}
+
+export function signInUser(credentials) {
+    return function(dispatch) {
+        Firebase.auth().signInWithEmailAndPassword(credentials.email, credentials.password)
+            .then(response => {
+                dispatch(authUser());
+            })
+            .catch(error => {
+                console.log(error);
+                dispatch(authError(error));
+            });
     }
 }
 
 export function signOutUser() {
     return {
         type: SIGN_OUT_USER
+    }
+}
+
+export function authUser() {
+    return {
+        type: AUTH_USER
+    }
+}
+
+export function authError(error) {
+    return {
+        type: AUTH_ERROR,
+        payload: error
     }
 }
