@@ -2,6 +2,7 @@ import request from 'superagent';
 import Firebase from 'firebase';
 
 export const REQUEST_GIFS = 'REQUEST_GIFS';
+export const FETCH_FAVORITED_GIFS = 'FETCH_FAVORITED_GIFS';
 export const OPEN_MODAL = 'OPEN_MODAL';
 export const CLOSE_MODAL = 'CLOSE_MODAL';
 
@@ -30,6 +31,35 @@ export function requestGifs(term = null) {
                 type: REQUEST_GIFS,
                 payload: response
             });
+        });
+    }
+}
+
+export function favoriteGif({selectedGif}) {
+    const userUid = Firebase.auth().currentUser.uid;
+    const gifId = selectedGif.id;
+
+    return dispatch => Firebase.database().ref(userUid).update({
+        [gifId]: selectedGif
+    });
+}
+
+export function unfavoriteGif({selectedGif}) {
+    const userUid = Firebase.auth().currentUser.uid;
+    const gifId = selectedGif.id;
+
+    return dispatch => Firebase.database().ref(userUid).child(gifId).remove();
+}
+
+export function fetchFavoritedGifs() {
+    return function(dispatch) {
+        const userId = Firebase.auth().currentUser.uid;
+
+        Firebase.database().ref(userId).on('value', snapshot => {
+            dispatch({
+                type: FETCH_FAVORITED_GIFS,
+                payload: snapshot.val()    
+            })
         });
     }
 }
